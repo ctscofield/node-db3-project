@@ -11,15 +11,16 @@ const Scheme = require("./scheme-model")
 */
 const checkSchemeId = async (req, res, next) => {
   try {
-    const scheme = await db('schemes')
+    const existing = await db('schemes')
       .where('scheme_id', req.params.scheme_id)
       .first()
-    if (!scheme) {
-      res.status(404).json({
+    if (!existing) {
+      next({
+        status: 404,
         message: `scheme with scheme_id ${req.params.scheme_id} not found`
       })
     } else {
-      res.status(200).json(scheme)
+      next()
     }
   } catch (err) {
     next(err)
@@ -58,8 +59,7 @@ const validateScheme = (req, res, next) => {
   }
 */
 const validateStep = (req, res, next) => {
-  const { instuctions, step_number } = req.body
-  const error = { status: 400 }
+  const { instructions, step_number } = req.body
   if (
     instructions === undefined ||
     typeof instructions !== 'string' ||
@@ -68,7 +68,7 @@ const validateStep = (req, res, next) => {
     step_number < 1
   ) {
     const error = { status: 400, message: "invalid step"}
-    next(err)
+    next(error)
   } else {
     next()
   }
